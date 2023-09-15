@@ -7,8 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+	<PackageReference Include="MediatR" Version="12.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.2" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.10">
+		<PrivateAssets>all</PrivateAssets>
+		<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	</PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AdvancedLINQ.Service\AdvancedLINQ.Service.csproj" />
+    <ProjectReference Include="..\AdvancedLINQ.Shared\AdvancedLINQ.Shared.csproj" />
   </ItemGroup>
 
 </Project>
