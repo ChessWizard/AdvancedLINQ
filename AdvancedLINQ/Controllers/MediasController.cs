@@ -4,6 +4,7 @@ using AdvancedLINQ.Service.CQRS.Queries.SearchMedias;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace AdvancedLINQ.Controllers
 {
@@ -22,6 +23,13 @@ namespace AdvancedLINQ.Controllers
         public async Task<IActionResult> SearchMedias([FromQuery] SearchMediasQuery query)
         {
             var result = await _mediator.Send(query);
+
+            if (result.PagingMetaData is not null)
+            {
+                Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.PagingMetaData));
+                result.PagingMetaData = null;// header'a eklendikten sonra body'de(result) gözükmemesi için null'lıyoruz
+            }
+                
             return ActionResult(result);
         }
 

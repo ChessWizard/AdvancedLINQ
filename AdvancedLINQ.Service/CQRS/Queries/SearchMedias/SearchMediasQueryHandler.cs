@@ -2,6 +2,7 @@
 using AdvancedLINQ.Core.Repositories;
 using AdvancedLINQ.Shared.Extensions;
 using AdvancedLINQ.Shared.ResponseObjects;
+using AdvancedLINQ.Shared.ResponseObjects.Paging;
 using Azure.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace AdvancedLINQ.Service.CQRS.Queries.SearchMedias
 {
-    public class SearchMediasQueryHandler : IRequestHandler<SearchMediasQuery, Response<List<SearchMediasQueryResult>>>
+    public class SearchMediasQueryHandler : IRequestHandler<SearchMediasQuery, PagingResult<List<SearchMediasQueryResult>>>
     {
         private readonly IMediaRepository _mediaRepository;
 
@@ -23,16 +24,16 @@ namespace AdvancedLINQ.Service.CQRS.Queries.SearchMedias
             _mediaRepository = mediaRepository;
         }
 
-        public async Task<Response<List<SearchMediasQueryResult>>> Handle(SearchMediasQuery command, CancellationToken cancellationToken)
+        public async Task<PagingResult<List<SearchMediasQueryResult>>> Handle(SearchMediasQuery query, CancellationToken cancellationToken)
         {
             var searchQuery = _mediaRepository.GetAll()
                 .Include(x => x.CategoryMedias)
                     .ThenInclude(y => y.Category)
-                .Where(x => x.MediaType == command.MediaType)
-                .Where(x => x.IMDB >= command.IMDBLowest);
+                .Where(x => x.MediaType == query.MediaType)
+                .Where(x => x.IMDB >= query.IMDBLowest);
 
-            CategoryTypeFilter(command, searchQuery);
-            PublishedYearFilter(command, searchQuery);
+            CategoryTypeFilter(query, searchQuery);
+            PublishedYearFilter(query, searchQuery);
 
             var favoriteMedias = await searchQuery.Select(x => new SearchMediasQueryResult
             {
@@ -48,10 +49,15 @@ namespace AdvancedLINQ.Service.CQRS.Queries.SearchMedias
                     PublishedDate = x.PublishedDate,
                 }
             })
+            .Pagination(query.PageNumber, query.PageSize)
             .ToListAsync();
 
-            return favoriteMedias.IsNullOrNotAny() ? Response<List<SearchMediasQueryResult>>.Error("Medias Not Found!", (int)HttpStatusCode.NotFound)
-                                                   : Response<List<SearchMediasQueryResult>>.Success(favoriteMedias, (int)HttpStatusCode.OK);
+            return new PagingResult<List<SearchMediasQueryResult>>
+            {
+                Data = favoriteMedias,
+                HttpStatusCode = favoriteMedias.IsNullOrNotAny() ? (int)HttpStatusCode.NotFound : (int)HttpStatusCode.OK,
+                PagingMetaData = new(query.PageSize, query.PageNumber, await searchQuery.CountAsync())
+            };
         }
 
         private void CategoryTypeFilter(SearchMediasQuery request, IQueryable<Media> searchQuery)

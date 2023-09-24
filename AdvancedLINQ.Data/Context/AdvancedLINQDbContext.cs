@@ -25,6 +25,14 @@ namespace AdvancedLINQ.Data.Context
 
         public DbSet<Employee> Employees { get; set; }
 
+        public DbSet<Album> Albums { get; set; }
+
+        public DbSet<AlbumArtist> AlbumArtists { get; set; }
+
+        public DbSet<Track> Tracks { get; set; }
+
+        public DbSet<Artist> Artists { get; set; }
+
         #region SaveChanges Interceptor
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

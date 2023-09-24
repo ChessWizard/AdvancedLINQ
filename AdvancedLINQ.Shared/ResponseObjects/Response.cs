@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AdvancedLINQ.Shared.ResponseObjects.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace AdvancedLINQ.Shared.ResponseObjects
 {
-    public class Response<TData>
+    public class Response<TData> : IBaseResponse<TData>
     {
         public TData Data { get; set; }
 
